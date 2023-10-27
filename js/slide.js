@@ -11,6 +11,10 @@ export default class Slide {
     this.onEnd = this.onEnd.bind(this);
   }
 
+  transition(active) {
+    this.slide.style.transition = active ? 'transform .3s' : '';
+  }
+
   moveSlide(distX) {
     this.dist.movePosition = distX;
     this.slide.style.transform = `translate3d(${distX}px, 0, 0)`;
@@ -33,18 +37,31 @@ export default class Slide {
       moveType = 'touchmove';
     }
     this.wrapper.addEventListener(moveType, this.onMove);
-  }
-
-  onEnd(e) {
-    const moveType = (e.type === 'mouseup') ? 'mousemove' : 'touchmove';
-    this.wrapper.removeEventListener(moveType, this.onMove);
-    this.dist.finalPosition = this.dist.movePosition;
+    this.transition(false);
   }
 
   onMove(e) {
     const pointerPosition = (e.type === 'mousemove') ? e.clientX : e.changedTouches[0].clientX;
     const finalPosition = this.updatePosition(pointerPosition);
     this.moveSlide(finalPosition);
+  }
+
+  onEnd(e) {
+    const moveType = (e.type === 'mouseup') ? 'mousemove' : 'touchmove';
+    this.wrapper.removeEventListener(moveType, this.onMove);
+    this.dist.finalPosition = this.dist.movePosition;
+    this.transition(true);
+    this.changeSlideOnEnd();
+  }
+
+  changeSlideOnEnd() {
+    if (this.dist.movement > 120 && this.index.prev !== undefined) {
+      this.activePrevSlide();
+    } else if (this.dist.movement < -120 && this.index.next !== undefined) {
+      this.activeNextSlide();
+    } else {
+      this.changeSlide(this.index.active);
+    }
   }
 
   addSlidEvents() {
@@ -56,35 +73,44 @@ export default class Slide {
 
   // Slides Config
 
-  slidesIndexNav(index){
+  slidesIndexNav(index) {
     const last = this.slideArray.length - 1;
-    this.index = { 
+    this.index = {
       prev: index ? index - 1 : undefined,
       active: index,
       next: (index === last) ? undefined : index + 1,
     }
   }
 
-  changeSlide(index){
-    const activeSlide = this.slideArray[index]; 
+  changeSlide(index) {
+    const activeSlide = this.slideArray[index];
     this.moveSlide(this.slideArray[index].position);
     this.slidesIndexNav(index);
     this.dist.finalPosition = activeSlide.position;
   }
 
-  slidePosition(slide){
+  slidePosition(slide) {
     const margin = (this.wrapper.offsetWidth - slide.offsetWidth) / 2;
     return -(slide.offsetLeft - margin);
   }
 
-  slidesConfig(){
+  slidesConfig() {
     this.slideArray = [...this.slide.children].map((element) => {
       const position = this.slidePosition(element)
       return { element, position }
     });
   }
 
+  activePrevSlide() {
+    if (this.index.prev !== undefined) this.changeSlide(this.index.prev)
+  }
+
+  activeNextSlide() {
+    if (this.index.next !== undefined) this.changeSlide(this.index.next)
+  }
+
   init() {
+    this.transition(true);
     this.bindEvents();
     this.addSlidEvents();
     this.slidesConfig();
