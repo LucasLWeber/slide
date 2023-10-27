@@ -1,28 +1,28 @@
-*{
+* {
   margin: 0;
   padding: 0;
 }
 
-ul{
+ul {
   padding: 0;
   margin: 0;
   list-style: none;
 }
 
-img{
+img {
   display: block;
   max-width: 100%;
 }
 
-.slide-wrapper{
+.slide-wrapper {
   overflow: hidden;
 }
 
-.slide{
+.slide {
   display: flex;
 }
 
-.slide li{
+.slide li {
   flex-shrink: 0;
   width: 80vw;
   max-width: 800px;
